@@ -35,6 +35,11 @@ docs/
 | Grading & timer enforcement | [backend/grading.md](backend/grading.md) |
 | Exam screen & autosave UX | [frontend/exam-screen.md](frontend/exam-screen.md) |
 | RAG pipeline walkthrough | [rag/pipeline.md](rag/pipeline.md) |
+| Heading-aware chunking | [rag/chunking.md](rag/chunking.md) |
+| Hybrid retrieval (Vector + BM25) | [rag/retrieval.md](rag/retrieval.md) |
+| Cross-encoder re-ranking | [rag/reranking.md](rag/reranking.md) |
+| Document ingestion & SSE | [backend/ingestion.md](backend/ingestion.md) |
+| RAG pipeline walkthrough | [rag/pipeline.md](rag/pipeline.md) |
 | Why cross-encoder re-ranking | [rag/reranking.md](rag/reranking.md) |
 | ProctorEngine design | [proctoring/proctor-engine.md](proctoring/proctor-engine.md) |
 | Why violation seq numbers | [proctoring/violation-events.md](proctoring/violation-events.md) |
