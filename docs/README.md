@@ -31,6 +31,9 @@ docs/
 | SQLAlchemy + Alembic setup | [backend/database.md](backend/database.md) |
 | JWT auth design | [backend/auth.md](backend/auth.md) |
 | Answer key encryption | [security/answer-key-encryption.md](security/answer-key-encryption.md) |
+| Quiz generation pipeline | [backend/quiz-generation.md](backend/quiz-generation.md) |
+| Grading & timer enforcement | [backend/grading.md](backend/grading.md) |
+| Exam screen & autosave UX | [frontend/exam-screen.md](frontend/exam-screen.md) |
 | RAG pipeline walkthrough | [rag/pipeline.md](rag/pipeline.md) |
 | Why cross-encoder re-ranking | [rag/reranking.md](rag/reranking.md) |
 | ProctorEngine design | [proctoring/proctor-engine.md](proctoring/proctor-engine.md) |

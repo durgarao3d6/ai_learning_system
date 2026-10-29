@@ -28,4 +28,5 @@ class Settings(BaseSettings):
     EMBEDDING_PROVIDER: str = "sentence_transformer"
     EMBEDDING_MODEL: str = "all-MiniLM-L6-v2"
 
+    FERNET_KEY: str = "w-B2c7X6Y5xLzP9_21vQ7J1k8NmO4RqTsUvWxYzAbCd="
     MAX_UPLOAD_SIZE_MB: int = 50

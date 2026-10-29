@@ -13,6 +13,7 @@ from app.middleware.request_id import RequestIDMiddleware
 from app.models.base import Base
 from app.routers.auth import limiter
 from app.routers.auth import router as auth_router
+from app.routers.quiz import router as quiz_router
 
 settings = get_settings()
 engine = get_engine(settings)
@@ -52,6 +53,7 @@ app.add_middleware(
 
 # Include routers
 app.include_router(auth_router, prefix="/api/v1")
+app.include_router(quiz_router, prefix="/api/v1")
 
 
 @app.get("/health", tags=["system"])

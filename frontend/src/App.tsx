@@ -3,6 +3,9 @@ import { Routes, Route, Navigate } from 'react-router-dom'
 import { LoginPage } from './pages/LoginPage'
 import { RegisterPage } from './pages/RegisterPage'
 import { LibraryPage } from './pages/LibraryPage'
+import { CreateQuizPage } from './pages/CreateQuizPage'
+import { ExamScreenPage } from './pages/ExamScreenPage'
+import { ResultsPage } from './pages/ResultsPage'
 import { Layout } from './components/Layout'
 import { AuthGuard } from './routes/guards/AuthGuard'
 import { ExamGuard } from './routes/guards/ExamGuard'
@@ -16,19 +19,15 @@ export const App: React.FC = () => {
 
       {/* Authenticated routes guarded by AuthGuard and ExamGuard */}
       <Route element={<AuthGuard />}>
+        {/* Fullscreen Exam Session (Outside Sidebar Layout) */}
+        <Route path="/exam/:attemptId" element={<ExamScreenPage />} />
+
         <Route element={<ExamGuard />}>
           <Route path="/" element={<Layout />}>
             <Route index element={<Navigate to="/library" replace />} />
             <Route path="library" element={<LibraryPage />} />
-            <Route
-              path="quiz/create"
-              element={
-                <div className="placeholder-page">
-                  <h2>Create Quiz</h2>
-                  <p>Create Quiz — coming in Phase 2</p>
-                </div>
-              }
-            />
+            <Route path="quiz/create" element={<CreateQuizPage />} />
+            <Route path="results/:attemptId" element={<ResultsPage />} />
             <Route
               path="progress"
               element={
