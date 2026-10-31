@@ -79,7 +79,11 @@ export const CreateQuizPage: React.FC = () => {
       }
 
       const attempt = await createAttempt(quiz.id, sessionMode)
-      navigate(`/exam/${attempt.id}?quizId=${quiz.id}`)
+      if (sessionMode === 'exam') {
+        navigate(`/precheck?quizId=${quiz.id}&attemptId=${attempt.id}`)
+      } else {
+        navigate(`/exam/${attempt.id}?quizId=${quiz.id}&mode=practice`)
+      }
     } catch (err: any) {
       setError(err?.response?.data?.detail || 'Failed to generate quiz. Please check server logs.')
     } finally {

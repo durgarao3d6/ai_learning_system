@@ -38,10 +38,11 @@ docs/
 | Heading-aware chunking | [rag/chunking.md](rag/chunking.md) |
 | Hybrid retrieval (Vector + BM25) | [rag/retrieval.md](rag/retrieval.md) |
 | Cross-encoder re-ranking | [rag/reranking.md](rag/reranking.md) |
+| RAG evaluation framework | [rag/evaluation.md](rag/evaluation.md) |
 | Document ingestion & SSE | [backend/ingestion.md](backend/ingestion.md) |
-| RAG pipeline walkthrough | [rag/pipeline.md](rag/pipeline.md) |
-| Why cross-encoder re-ranking | [rag/reranking.md](rag/reranking.md) |
-| ProctorEngine design | [proctoring/proctor-engine.md](proctoring/proctor-engine.md) |
-| Why violation seq numbers | [proctoring/violation-events.md](proctoring/violation-events.md) |
+| ProctorEngine architecture | [proctoring/proctor-engine.md](proctoring/proctor-engine.md) |
+| Violation sequence & debounce | [proctoring/violation-events.md](proctoring/violation-events.md) |
+| Detection thresholds matrix | [proctoring/detection-thresholds.md](proctoring/detection-thresholds.md) |
+| ExamGuard route boundaries | [frontend/exam-guard.md](frontend/exam-guard.md) |
 | Frontend state split | [frontend/state-management.md](frontend/state-management.md) |
 | Route guards | [frontend/routing.md](frontend/routing.md) |

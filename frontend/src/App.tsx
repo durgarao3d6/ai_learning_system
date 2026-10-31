@@ -5,6 +5,7 @@ import { RegisterPage } from './pages/RegisterPage'
 import { LibraryPage } from './pages/LibraryPage'
 import { CreateQuizPage } from './pages/CreateQuizPage'
 import { ExamScreenPage } from './pages/ExamScreenPage'
+import { PreCheckPage } from './pages/PreCheckPage'
 import { ResultsPage } from './pages/ResultsPage'
 import { Layout } from './components/Layout'
 import { AuthGuard } from './routes/guards/AuthGuard'
@@ -19,7 +20,8 @@ export const App: React.FC = () => {
 
       {/* Authenticated routes guarded by AuthGuard and ExamGuard */}
       <Route element={<AuthGuard />}>
-        {/* Fullscreen Exam Session (Outside Sidebar Layout) */}
+        {/* Fullscreen Exam Session & Pre-check (Outside Sidebar Layout) */}
+        <Route path="/precheck" element={<PreCheckPage />} />
         <Route path="/exam/:attemptId" element={<ExamScreenPage />} />
 
         <Route element={<ExamGuard />}>

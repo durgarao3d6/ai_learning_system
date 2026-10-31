@@ -2,11 +2,15 @@
 
 import datetime
 import uuid
+from typing import TYPE_CHECKING
 
 from sqlalchemy import JSON, Boolean, DateTime, Float, ForeignKey, Integer, String, Text, Uuid
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.models.base import Base, TimestampMixin
+
+if TYPE_CHECKING:
+    from app.models.violation import Violation
 
 
 class Quiz(Base, TimestampMixin):
@@ -94,11 +98,14 @@ class Attempt(Base, TimestampMixin):
     total_questions: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
     correct_count: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
     time_limit_seconds: Mapped[int] = mapped_column(Integer, default=900, nullable=False)
+    strike_count: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
+    max_strikes: Mapped[int] = mapped_column(Integer, default=3, nullable=False)
     started_at: Mapped[datetime.datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     completed_at: Mapped[datetime.datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
 
     quiz: Mapped["Quiz"] = relationship("Quiz", back_populates="attempts")
     answers: Mapped[list["AttemptAnswer"]] = relationship("AttemptAnswer", back_populates="attempt", cascade="all, delete-orphan")
+    violations: Mapped[list["Violation"]] = relationship("Violation", back_populates="attempt", cascade="all, delete-orphan")
 
 
 class AttemptAnswer(Base, TimestampMixin):

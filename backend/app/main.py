@@ -14,6 +14,7 @@ from app.models.base import Base
 from app.routers.auth import limiter
 from app.routers.auth import router as auth_router
 from app.routers.documents import router as documents_router
+from app.routers.proctoring import router as proctoring_router
 from app.routers.quiz import router as quiz_router
 
 settings = get_settings()
@@ -56,6 +57,7 @@ app.add_middleware(
 app.include_router(auth_router, prefix="/api/v1")
 app.include_router(documents_router, prefix="/api/v1")
 app.include_router(quiz_router, prefix="/api/v1")
+app.include_router(proctoring_router, prefix="/api/v1")
 
 
 @app.get("/health", tags=["system"])

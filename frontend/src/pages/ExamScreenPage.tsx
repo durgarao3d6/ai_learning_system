@@ -2,11 +2,15 @@ import React, { useEffect, useState, useRef } from 'react'
 import { useParams, useSearchParams, useNavigate } from 'react-router-dom'
 import { getQuiz, saveAnswer, submitAttempt, QuizPublic, QuestionPublic } from '../api/quiz'
 import { useExamStore } from '../stores/examStore'
+import { ProctorEngine } from '../proctoring/ProctorEngine'
 
 export const ExamScreenPage: React.FC = () => {
   const { attemptId } = useParams<{ attemptId: string }>()
   const [searchParams] = useSearchParams()
   const quizId = searchParams.get('quizId')
+  const mode = searchParams.get('mode') || 'practice'
+  const isExamMode = mode === 'exam'
+
   const navigate = useNavigate()
   const examStore = useExamStore()
 
@@ -19,6 +23,11 @@ export const ExamScreenPage: React.FC = () => {
   const [submitting, setSubmitting] = useState(false)
   const [offline, setOffline] = useState(!navigator.onLine)
 
+  // Proctoring States
+  const [strikes, setStrikes] = useState(0)
+  const [maxStrikes] = useState(3)
+  const [blockingWarning, setBlockingWarning] = useState<string | null>(null)
+  const proctorEngineRef = useRef<ProctorEngine | null>(null)
   const debounceTimerRef = useRef<NodeJS.Timeout | null>(null)
 
   useEffect(() => {
@@ -31,6 +40,35 @@ export const ExamScreenPage: React.FC = () => {
       window.removeEventListener('offline', handleOffline)
     }
   }, [])
+
+  // Initialize Proctoring Engine in Exam Mode
+  useEffect(() => {
+    if (!attemptId || !isExamMode) return
+
+    const engine = new ProctorEngine(attemptId)
+    proctorEngineRef.current = engine
+    engine.start()
+
+    const unbind = engine.onViolation((payload) => {
+      setStrikes((prev) => {
+        const next = prev + 1
+        examStore.incrementStrike()
+        if (next >= maxStrikes) {
+          handleAutoSubmit('Disqualified: Maximum strike limit exceeded.')
+        } else {
+          setBlockingWarning(
+            `Violation Detected: ${payload.event_type.replace('_', ' ').toUpperCase()} (Strike ${next} of ${maxStrikes}). Please return to fullscreen and refocus on the exam.`
+          )
+        }
+        return next
+      })
+    })
+
+    return () => {
+      unbind()
+      engine.stop()
+    }
+  }, [attemptId, isExamMode])
 
   useEffect(() => {
     if (!quizId) return
@@ -50,7 +88,7 @@ export const ExamScreenPage: React.FC = () => {
       setTimeLeft((prev) => {
         if (prev !== null && prev <= 1) {
           clearInterval(timer)
-          handleAutoSubmit()
+          handleAutoSubmit('Time Expired: Exam submitted.')
           return 0
         }
         return prev ? prev - 1 : 0
@@ -59,12 +97,14 @@ export const ExamScreenPage: React.FC = () => {
     return () => clearInterval(timer)
   }, [timeLeft])
 
-  const handleAutoSubmit = async () => {
+  const handleAutoSubmit = async (reason?: string) => {
     if (!attemptId) return
     setSubmitting(true)
     try {
+      if (proctorEngineRef.current) proctorEngineRef.current.stop()
       await submitAttempt(attemptId)
       examStore.reset()
+      if (reason) alert(reason)
       navigate(`/results/${attemptId}`)
     } catch (err) {
       console.error('Failed auto submit:', err)
@@ -110,6 +150,7 @@ export const ExamScreenPage: React.FC = () => {
 
     setSubmitting(true)
     try {
+      if (proctorEngineRef.current) proctorEngineRef.current.stop()
       await submitAttempt(attemptId)
       examStore.reset()
       navigate(`/results/${attemptId}`)
@@ -118,6 +159,17 @@ export const ExamScreenPage: React.FC = () => {
     } finally {
       setSubmitting(false)
     }
+  }
+
+  const handleDismissWarning = async () => {
+    if (document.documentElement.requestFullscreen && !document.fullscreenElement) {
+      try {
+        await document.documentElement.requestFullscreen()
+      } catch {
+        // Ignore fullscreen gesture errors
+      }
+    }
+    setBlockingWarning(null)
   }
 
   if (!quiz) {
@@ -130,10 +182,38 @@ export const ExamScreenPage: React.FC = () => {
   const seconds = (timeLeft || 0) % 60
 
   return (
-    <div style={{ maxWidth: '800px', margin: '1.5rem auto', padding: '1rem' }}>
+    <div style={{ maxWidth: '800px', margin: '1.5rem auto', padding: '1rem', position: 'relative' }}>
+      {/* Blocking Proctoring Violation Overlay */}
+      {blockingWarning && (
+        <div
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: 'rgba(15, 17, 23, 0.95)',
+            zIndex: 9999,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '1.5rem',
+          }}
+        >
+          <div className="card" style={{ maxWidth: '500px', textAlign: 'center', padding: '2rem', border: '2px solid var(--error)' }}>
+            <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>⚠️</div>
+            <h3 style={{ color: 'var(--error)', marginBottom: '1rem' }}>Integrity Alert</h3>
+            <p style={{ lineHeight: 1.5, marginBottom: '1.5rem' }}>{blockingWarning}</p>
+            <button className="btn-primary" onClick={handleDismissWarning} style={{ padding: '0.75rem 1.5rem' }}>
+              I Understand — Return to Exam
+            </button>
+          </div>
+        </div>
+      )}
+
       {offline && (
         <div style={{ backgroundColor: '#f59e0b', color: '#1a1d27', padding: '0.75rem', borderRadius: '6px', marginBottom: '1rem', fontWeight: 600 }}>
-          Offline Mode: Answers are buffered locally and will sync when reconnected.
+          Offline Mode: Answers and violation signals are buffered locally and will sync when reconnected.
         </div>
       )}
 
@@ -145,8 +225,24 @@ export const ExamScreenPage: React.FC = () => {
             Topic: {quiz.topic} • {answeredCount} of {quiz.questions.length} answered {saving && '• Autosaving...'}
           </span>
         </div>
-        <div style={{ fontSize: '1.25rem', fontWeight: 700, color: (timeLeft || 0) < 120 ? '#ef4444' : 'var(--accent)' }}>
-          ⏱ {String(minutes).padStart(2, '0')}:{String(seconds).padStart(2, '0')}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+          {isExamMode && (
+            <div
+              style={{
+                padding: '0.35rem 0.75rem',
+                borderRadius: '6px',
+                backgroundColor: strikes > 0 ? 'rgba(239, 68, 68, 0.2)' : 'rgba(16, 185, 129, 0.2)',
+                color: strikes > 0 ? 'var(--error)' : 'var(--success)',
+                fontWeight: 700,
+                fontSize: '0.9rem',
+              }}
+            >
+              ⚠️ Strikes: {strikes} / {maxStrikes}
+            </div>
+          )}
+          <div style={{ fontSize: '1.25rem', fontWeight: 700, color: (timeLeft || 0) < 120 ? '#ef4444' : 'var(--accent)' }}>
+            ⏱ {String(minutes).padStart(2, '0')}:{String(seconds).padStart(2, '0')}
+          </div>
         </div>
       </div>
 

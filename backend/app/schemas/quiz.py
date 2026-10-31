@@ -66,6 +66,8 @@ class AttemptResponse(BaseModel):
     mode: str
     time_limit_seconds: int
     total_questions: int
+    strike_count: int = 0
+    max_strikes: int = 3
 
     class Config:
         from_attributes = True
@@ -117,4 +119,7 @@ class AttemptResultResponse(BaseModel):
     total_questions: int
     correct_count: int
     percentage: float
+    strike_count: int = 0
+    max_strikes: int = 3
+    integrity_status: str = "clean"
     questions: list[QuestionResultResponse]
